@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travaux & Équipements Publics — Paris</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #F0F1F3;
+      --surface: #FFFFFF;
+      --border: #D6DAE0;
+      --text: #061F33;
+      --text-muted: #5C6670;
+      --accent: #061F33;
+      --accent-light: #0A3356;
+      --accent-fg: #FFFFFF;
+      --card-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    [data-theme="dark"] {
+      --bg: #081824;
+      --surface: #0E2236;
+      --border: #1B3A55;
+      --text: #E8ECF0;
+      --text-muted: #8BA3BB;
+      --accent: #FFD437;
+      --accent-light: #FFE066;
+      --accent-fg: #061F33;
+      --card-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    body {
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* Header — always Paris navy */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: #061F33;
+      border-bottom: 1px solid #0A3356;
+      height: 56px;
+    }
+    header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    header h1 span { color: #FFD437; }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    nav {
+      display: flex;
+      gap: 4px;
+    }
+    nav a {
+      font-size: 13px;
+      padding: 5px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.15s;
+    }
+    nav a:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+    nav a.active {
+      background: #FFD437;
+      border-color: #FFD437;
+      color: #061F33;
+      font-weight: 600;
+    }
+    .record-count {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.12);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .theme-toggle {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      padding: 5px 8px;
+      display: flex;
+      align-items: center;
+      transition: all 0.15s;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .theme-toggle svg { width: 16px; height: 16px; }
+    .icon-sun { display: none; }
+    [data-theme="dark"] .icon-sun { display: block; }
+    [data-theme="dark"] .icon-moon { display: none; }
+
+    /* Layout */
+    .layout {
+      display: flex;
+      height: calc(100vh - 56px);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 340px;
+      min-width: 340px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .filters {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .filters h2 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .filter-group { margin-bottom: 14px; }
+    .filter-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: var(--accent); }
+    .btn-reset {
+      width: 100%;
+      padding: 7px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { border-color: var(--accent); color: var(--text); }
+
+    /* Charts area */
+    .charts {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .chart-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .chart-box h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    /* Map */
+    .map-container {
+      flex: 1;
+      position: relative;
+    }
+    #map { width: 100%; height: 100%; }
+
+    /* Custom Leaflet */
+    .leaflet-container { background: var(--bg); }
+    .leaflet-popup-content-wrapper {
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .leaflet-popup-tip { background: var(--surface); }
+    .leaflet-popup-content { margin: 12px 14px; font-size: 13px; line-height: 1.5; }
+    .popup-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+    .popup-row { display: flex; gap: 6px; }
+    .popup-label { color: var(--text-muted); min-width: 70px; }
+    .popup-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      margin-top: 6px;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-light);
+    }
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.3s;
+    }
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* List */
+    .record-list {
+      flex: 1;
+      overflow-y: auto;
+      display: none;
+    }
+    .record-item {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .record-item:hover { background: var(--bg); }
+    .record-item-name { font-size: 13px; font-weight: 500; }
+    .record-item-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Tab toggle */
+    .tab-toggle {
+      display: flex;
+      padding: 12px 16px 0;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 6px;
+      text-align: center;
+      font-size: 12px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:first-child { border-radius: 6px 0 0 6px; }
+    .tab-btn:last-child { border-radius: 0 6px 6px 0; }
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-fg);
+    }
+  </style>
+</head>
+<body>
+  <script>if(localStorage.getItem('paris-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');</script>
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <header>
+    <div class="header-left">
+      <h1>Travaux & <span>Équipements Publics</span> — Paris</h1>
+      <nav>
+        <a href="index.html" class="active">Carte</a>
+        <a href="projects.html">Projets</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div class="record-count" id="recordCount">Chargement...</div>
+      <button class="theme-toggle" id="themeToggle" title="Changer de thème">
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="stats" id="stats"></div>
+
+      <div class="filters">
+        <h2>Filtres</h2>
+        <div class="filter-group">
+          <label>Secteur</label>
+          <select id="filterSecteur"><option value="">Tous</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Type d'équipement</label>
+          <select id="filterType"><option value="">Tous</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Arrondissement</label>
+          <select id="filterArrond"><option value="">Tous</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Type de travaux</label>
+          <select id="filterConstruction"><option value="">Tous</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Service</label>
+          <select id="filterService"><option value="">Tous</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Année de livraison</label>
+          <select id="filterAnnee"><option value="">Toutes</option></select>
+        </div>
+        <div class="filter-group">
+          <label>Recherche</label>
+          <input type="text" id="filterSearch" placeholder="Nom, adresse...">
+        </div>
+        <button class="btn-reset" id="btnReset">Réinitialiser les filtres</button>
+      </div>
+
+      <div class="tab-toggle">
+        <button class="tab-btn active" data-tab="charts">Graphiques</button>
+        <button class="tab-btn" data-tab="list">Liste</button>
+      </div>
+
+      <div class="charts" id="chartsPanel">
+        <div class="chart-box">
+          <h3>Par Secteur</h3>
+          <canvas id="chartSecteur"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Par Année de livraison</h3>
+          <canvas id="chartAnnee"></canvas>
+        </div>
+      </div>
+
+      <div class="record-list" id="listPanel"></div>
+    </aside>
+
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    let allRecords = [];
+    let filteredRecords = [];
+    let markers = [];
+    let map, markerGroup, tileLayer;
+    let chartSecteur, chartAnnee;
+
+    function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+    function tileUrl() {
+      return isDark()
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    }
+    function themeColor(prop) {
+      return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+    }
+
+    // ——— Init map ———
+    function initMap() {
+      map = L.map('map', {
+        zoomControl: false,
+      }).setView([48.8566, 2.3522], 12);
+
+      L.control.zoom({ position: 'topright' }).addTo(map);
+
+      tileLayer = L.tileLayer(tileUrl(), {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+        maxZoom: 19,
+      }).addTo(map);
+
+      markerGroup = L.layerGroup().addTo(map);
+    }
+
+    // ——— Create markers ———
+    function createMarker(record) {
+      const geo = record.geo_point_2d;
+      if (!geo) return null;
+
+      const color = getColor(record.secteur);
+      const icon = L.divIcon({
+        className: '',
+        html: `<svg width="24" height="24" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" fill="${color}" fill-opacity="0.85" stroke="#fff" stroke-width="1.5" stroke-opacity="0.5"/>
+        </svg>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+
+      const budget = record.budget ? parseInt(record.budget.replace(/\s/g, ''), 10) : null;
+      const budgetStr = budget ? budget.toLocaleString('fr-FR') + ' €' : '—';
+      const dateStr = record.annee_livraison || '—';
+
+      const popup = `
+        <div class="popup-title">${record.equipement || '—'}</div>
+        <div class="popup-row"><span class="popup-label">Adresse</span> ${record.adresse || '—'}${record._arrondissement ? ` (${record._arrondissement})` : ''}</div>
+        <div class="popup-row"><span class="popup-label">Secteur</span> ${record.secteur || '—'}</div>
+        <div class="popup-row"><span class="popup-label">Type</span> ${record.type_equipement || '—'}</div>
+        <div class="popup-row"><span class="popup-label">Travaux</span> ${record._constructionGroup || '—'}${record._constructionGroup !== record.type_construction && record.type_construction ? ` <span style="color:var(--text-muted)">(${record.type_construction})</span>` : ''}</div>
+        <div class="popup-row"><span class="popup-label">Budget</span> ${budgetStr}</div>
+        <div class="popup-row"><span class="popup-label">Livraison</span> ${dateStr}</div>
+        ${record.description ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">${record.description}</div>` : ''}
+        <div><span class="popup-badge" style="background:${color}33;color:${color}">${record.secteur || '—'}</span></div>
+      `;
+
+      const marker = L.marker([geo.lat, geo.lon], { icon }).bindPopup(popup, { maxWidth: 280 });
+      return marker;
+    }
+
+    // ——— Populate filters ———
+    function populateFilters() {
+      const arrondissements = [...new Set(allRecords.map(r => r._arrondissement).filter(Boolean))]
+        .sort((a, b) => parseInt(a) - parseInt(b));
+
+      const sets = {
+        filterSecteur: [...new Set(allRecords.map(r => r.secteur).filter(Boolean))].sort(),
+        filterType: [...new Set(allRecords.map(r => r.type_equipement).filter(Boolean))].sort(),
+        filterConstruction: [...new Set(allRecords.map(r => r._constructionGroup).filter(Boolean))].sort(),
+        filterService: [...new Set(allRecords.map(r => r._service).filter(Boolean))].sort(),
+        filterAnnee: [...new Set(allRecords.map(r => r.annee_livraison).filter(Boolean))].sort(),
+        filterArrond: arrondissements,
+      };
+
+      for (const [id, values] of Object.entries(sets)) {
+        const sel = document.getElementById(id);
+        values.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v;
+          opt.textContent = v;
+          sel.appendChild(opt);
+        });
+      }
+    }
+
+    // ——— Apply filters ———
+    function applyFilters() {
+      const secteur = document.getElementById('filterSecteur').value;
+      const type = document.getElementById('filterType').value;
+      const construction = document.getElementById('filterConstruction').value;
+      const service = document.getElementById('filterService').value;
+      const annee = document.getElementById('filterAnnee').value;
+      const arrond = document.getElementById('filterArrond').value;
+      const search = document.getElementById('filterSearch').value.toLowerCase();
+
+      filteredRecords = allRecords.filter(r => {
+        if (secteur && r.secteur !== secteur) return false;
+        if (type && r.type_equipement !== type) return false;
+        if (construction && r._constructionGroup !== construction) return false;
+        if (service && r._service !== service) return false;
+        if (annee && r.annee_livraison !== annee) return false;
+        if (arrond && r._arrondissement !== arrond) return false;
+        if (search) {
+          const hay = [r.equipement, r.adresse, r.description, r.type_equipement, r.secteur]
+            .filter(Boolean).join(' ').toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      });
+
+      updateMap();
+      updateCharts();
+      updateStats();
+      updateList();
+      document.getElementById('recordCount').textContent = `${filteredRecords.length} / ${allRecords.length} projets`;
+    }
+
+    // ——— Update map markers ———
+    function updateMap() {
+      markerGroup.clearLayers();
+      filteredRecords.forEach(r => {
+        const m = createMarker(r);
+        if (m) markerGroup.addLayer(m);
+      });
+    }
+
+    // ——— Update charts ———
+    function updateCharts() {
+      // Secteur chart
+      const secteurCounts = {};
+      filteredRecords.forEach(r => {
+        const s = r.secteur || 'Autre';
+        secteurCounts[s] = (secteurCounts[s] || 0) + 1;
+      });
+      const secteurLabels = Object.keys(secteurCounts).sort((a, b) => secteurCounts[b] - secteurCounts[a]);
+      const secteurData = secteurLabels.map(l => secteurCounts[l]);
+      const secteurColors = secteurLabels.map(l => getColor(l));
+
+      if (chartSecteur) chartSecteur.destroy();
+      chartSecteur = new Chart(document.getElementById('chartSecteur'), {
+        type: 'doughnut',
+        data: {
+          labels: secteurLabels,
+          datasets: [{ data: secteurData, backgroundColor: secteurColors, borderWidth: 0 }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: themeColor('--text-muted'), font: { size: 11 }, padding: 8, boxWidth: 12 } }
+          }
+        }
+      });
+
+      // Annee chart
+      const anneeCounts = {};
+      filteredRecords.forEach(r => {
+        const a = r.annee_livraison || 'N/A';
+        anneeCounts[a] = (anneeCounts[a] || 0) + 1;
+      });
+      const anneeLabels = Object.keys(anneeCounts).sort();
+      const anneeData = anneeLabels.map(l => anneeCounts[l]);
+
+      if (chartAnnee) chartAnnee.destroy();
+      chartAnnee = new Chart(document.getElementById('chartAnnee'), {
+        type: 'bar',
+        data: {
+          labels: anneeLabels,
+          datasets: [{
+            data: anneeData,
+            backgroundColor: themeColor('--accent'),
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: themeColor('--text-muted'), font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: themeColor('--text-muted'), font: { size: 10 } }, grid: { color: themeColor('--border') } }
+          }
+        }
+      });
+    }
+
+    // ——— Update stats ———
+    function updateStats() {
+      const totalBudget = filteredRecords.reduce((sum, r) => {
+        if (!r.budget) return sum;
+        return sum + parseInt(r.budget.replace(/\s/g, ''), 10);
+      }, 0);
+      const secteurs = new Set(filteredRecords.map(r => r.secteur).filter(Boolean)).size;
+
+      document.getElementById('stats').innerHTML = `
+        <div class="stat">
+          <div class="stat-value">${filteredRecords.length}</div>
+          <div class="stat-label">Projets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${secteurs}</div>
+          <div class="stat-label">Secteurs</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${(totalBudget / 1_000_000).toFixed(1)}M€</div>
+          <div class="stat-label">Budget total</div>
+        </div>
+      `;
+    }
+
+    // ——— Update list ———
+    function updateList() {
+      const panel = document.getElementById('listPanel');
+      panel.innerHTML = filteredRecords.map((r, i) => `
+        <div class="record-item" data-index="${i}">
+          <div class="record-item-name">${r.equipement || '—'}</div>
+          <div class="record-item-meta">${r._arrondissement || ''} · ${r.secteur || ''} · ${r._constructionGroup || ''} · ${r.annee_livraison || ''}</div>
+        </div>
+      `).join('');
+
+      panel.querySelectorAll('.record-item').forEach(el => {
+        el.addEventListener('click', () => {
+          const r = filteredRecords[el.dataset.index];
+          if (r.geo_point_2d) {
+            map.setView([r.geo_point_2d.lat, r.geo_point_2d.lon], 16);
+            // Open the popup for this record
+            markerGroup.eachLayer(layer => {
+              const ll = layer.getLatLng();
+              if (Math.abs(ll.lat - r.geo_point_2d.lat) < 0.0001 && Math.abs(ll.lng - r.geo_point_2d.lon) < 0.0001) {
+                layer.openPopup();
+              }
+            });
+          }
+        });
+      });
+    }
+
+    // ——— Tabs ———
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('chartsPanel').style.display = tab === 'charts' ? '' : 'none';
+        document.getElementById('listPanel').style.display = tab === 'list' ? '' : 'none';
+      });
+    });
+
+    // ——— Filter event listeners ———
+    ['filterSecteur', 'filterType', 'filterConstruction', 'filterService', 'filterAnnee', 'filterArrond'].forEach(id => {
+      document.getElementById(id).addEventListener('change', applyFilters);
+    });
+    document.getElementById('filterSearch').addEventListener('input', applyFilters);
+    document.getElementById('btnReset').addEventListener('click', () => {
+      ['filterSecteur', 'filterType', 'filterConstruction', 'filterService', 'filterAnnee', 'filterArrond'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('filterSearch').value = '';
+      applyFilters();
+    });
+
+    // ——— Theme toggle ———
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      if (isDark()) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('paris-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('paris-theme', 'dark');
+      }
+      tileLayer.setUrl(tileUrl());
+      updateCharts();
+    });
+
+    // ——— Init ———
+    (async () => {
+      initMap();
+      allRecords = await fetchAll();
+      populateFilters();
+      applyFilters();
+      document.getElementById('loading').classList.add('hidden');
+    })();
+  </script>
+</body>
+</html>
