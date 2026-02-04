@@ -279,7 +279,7 @@
         position: fixed;
         top: 68px;
         left: 12px;
-        z-index: 1000;
+        z-index: 10000;
         padding: 8px 18px;
         background: var(--accent);
         color: var(--accent-fg);
@@ -290,6 +290,9 @@
         font-weight: 600;
         cursor: pointer;
         box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        pointer-events: auto;
       }
 
       .sidebar-close {
@@ -731,12 +734,25 @@
     });
 
     // ——— Sidebar mobile toggle ———
-    document.getElementById('sidebarToggle').addEventListener('click', () => {
-      document.querySelector('.sidebar').classList.add('open');
-    });
-    document.getElementById('sidebarClose').addEventListener('click', () => {
-      document.querySelector('.sidebar').classList.remove('open');
-    });
+    const sidebarEl = document.querySelector('.sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const closeBtn = document.getElementById('sidebarClose');
+
+    function openSidebar(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      sidebarEl.classList.add('open');
+    }
+    function closeSidebar(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      sidebarEl.classList.remove('open');
+    }
+
+    toggleBtn.addEventListener('click', openSidebar);
+    toggleBtn.addEventListener('touchend', openSidebar);
+    closeBtn.addEventListener('click', closeSidebar);
+    closeBtn.addEventListener('touchend', closeSidebar);
 
     // ——— Theme toggle ———
     document.getElementById('themeToggle').addEventListener('click', () => {
