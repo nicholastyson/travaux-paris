@@ -252,6 +252,68 @@
     }
 
     /* Loading */
+    /* Mobile toggle / close buttons — hidden on desktop */
+    .sidebar-toggle,
+    .sidebar-close { display: none; }
+
+    @media (max-width: 768px) {
+      .header-left h1 span { display: none; }
+      .record-count { display: none; }
+
+      .sidebar {
+        position: fixed;
+        inset: 0;
+        top: 56px;
+        z-index: 50;
+        width: 100%;
+        min-width: 0;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-toggle {
+        display: block;
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 40;
+        padding: 8px 18px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        border: none;
+        border-radius: 20px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      }
+
+      .sidebar-close {
+        display: block;
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 51;
+        width: 36px;
+        height: 36px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        font-size: 20px;
+        line-height: 1;
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .filters {
+        position: relative;
+      }
+    }
+
     .loading-overlay {
       position: fixed;
       inset: 0;
@@ -341,6 +403,7 @@
       <div class="stats" id="stats"></div>
 
       <div class="filters">
+        <button class="sidebar-close" id="sidebarClose">&times;</button>
         <h2>Filtres</h2>
         <div class="filter-group">
           <label>Secteur</label>
@@ -393,6 +456,7 @@
     </aside>
 
     <div class="map-container">
+      <button class="sidebar-toggle" id="sidebarToggle">Filtres</button>
       <div id="map"></div>
     </div>
   </div>
@@ -663,6 +727,14 @@
       });
       document.getElementById('filterSearch').value = '';
       applyFilters();
+    });
+
+    // ——— Sidebar mobile toggle ———
+    document.getElementById('sidebarToggle').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.add('open');
+    });
+    document.getElementById('sidebarClose').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.remove('open');
     });
 
     // ——— Theme toggle ———
