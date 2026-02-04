@@ -342,7 +342,7 @@
 
   <div class="filter-bar">
     <div class="filter-item">
-      <label>Secteur</label>
+      <label>Catégorie</label>
       <select id="filterSecteur"><option value="">Tous</option></select>
     </div>
     <div class="filter-item">
@@ -400,6 +400,34 @@
           opt.textContent = v;
           sel.appendChild(opt);
         });
+      }
+      updateTypeOptions();
+    }
+
+    function updateTypeOptions() {
+      const sel = document.getElementById('filterType');
+      const current = sel.value;
+      const secteur = document.getElementById('filterSecteur').value;
+
+      let types;
+      if (secteur) {
+        types = [...new Set(allRecords.filter(r => r.secteur === secteur).map(r => r.type_equipement).filter(Boolean))].sort();
+      } else {
+        types = [...new Set(allRecords.map(r => r.type_equipement).filter(Boolean))].sort();
+      }
+
+      sel.innerHTML = '<option value="">Tous</option>';
+      types.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      });
+
+      if (types.includes(current)) {
+        sel.value = current;
+      } else {
+        sel.value = '';
       }
     }
 
@@ -484,7 +512,11 @@
     }
 
     // Filter event listeners
-    ['filterSecteur', 'filterType', 'filterConstruction', 'filterService', 'filterAnnee', 'filterArrond'].forEach(id => {
+    document.getElementById('filterSecteur').addEventListener('change', () => {
+      updateTypeOptions();
+      applyFilters();
+    });
+    ['filterType', 'filterConstruction', 'filterService', 'filterAnnee', 'filterArrond'].forEach(id => {
       document.getElementById(id).addEventListener('change', applyFilters);
     });
     document.getElementById('filterSearch').addEventListener('input', applyFilters);
@@ -493,6 +525,7 @@
         document.getElementById(id).value = '';
       });
       document.getElementById('filterSearch').value = '';
+      updateTypeOptions();
       applyFilters();
     });
 
