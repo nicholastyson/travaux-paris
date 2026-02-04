@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projets — Travaux & Équipements Publics — Paris</title>
+  <title>Bâtiments — Travaux & Équipements Publics — Paris</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -159,7 +159,7 @@
     /* Card grid */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
       gap: 16px;
       padding: 24px;
     }
@@ -167,70 +167,19 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
       transition: border-color 0.15s, box-shadow 0.15s;
       box-shadow: var(--card-shadow);
-    }
-    .card:hover { border-color: var(--accent); }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-    .card-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 500;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .card-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 13px;
-    }
-    .card-row {
-      display: flex;
-      gap: 8px;
-    }
-    .card-label {
-      color: var(--text-muted);
-      min-width: 80px;
-      flex-shrink: 0;
-      font-size: 12px;
-    }
-    .card-value {
-      font-size: 13px;
-    }
-    .card-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
       overflow: hidden;
     }
+    .card:hover { border-color: var(--accent); }
 
     /* Card images */
     .card-images {
       display: flex;
-      gap: 6px;
-      margin: -18px -18px 0 -18px;
-      padding: 0;
-      border-radius: 9px 9px 0 0;
+      gap: 0;
+      height: 140px;
       overflow: hidden;
     }
     .card-images > div {
@@ -280,6 +229,121 @@
       font-size: 11px;
     }
 
+    /* Clickable card header */
+    .card-clickable {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 18px 0;
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .card-clickable:hover .card-title { color: var(--accent-light); }
+    .card-title-area { flex: 1; min-width: 0; }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.3;
+      transition: color 0.15s;
+    }
+    .card-address {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .card-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .card-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .card-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      transition: transform 0.25s ease, background 0.15s;
+    }
+    .card-toggle svg {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+    }
+    .card.expanded .card-toggle {
+      transform: rotate(180deg);
+    }
+
+    /* Summary row */
+    .card-summary {
+      display: flex;
+      gap: 16px;
+      padding: 10px 18px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .card-summary strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* Collapsible project list */
+    .card-projects {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .card.expanded .card-projects {
+      max-height: 2000px;
+    }
+
+    /* Project rows */
+    .project-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 8px 18px;
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .project-row:first-child { border-top: none; }
+    .project-type {
+      font-weight: 500;
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+    .project-budget {
+      min-width: 90px;
+      flex-shrink: 0;
+      text-align: right;
+      font-weight: 500;
+    }
+    .project-year {
+      min-width: 40px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+    .project-desc {
+      flex: 1;
+      min-width: 0;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* Empty state */
     .empty-state {
       grid-column: 1 / -1;
@@ -314,6 +378,9 @@
       .card-grid { grid-template-columns: 1fr; padding: 14px; }
       .filter-bar { padding: 10px 14px; }
       select, input[type="text"] { min-width: 120px; }
+      .project-type { min-width: 100px; }
+      .project-budget { min-width: 70px; }
+      .project-desc { display: none; }
     }
   </style>
 </head>
@@ -328,8 +395,8 @@
       <h1>Travaux & <span>Équipements Publics</span> — Paris</h1>
       <nav>
         <a href="index.html">Carte</a>
-        <a href="projects.html" class="active">Projets</a>
-        <a href="buildings.html">Bâtiments</a>
+        <a href="projects.html">Projets</a>
+        <a href="buildings.html" class="active">Bâtiments</a>
       </nav>
     </div>
     <div class="header-right">
@@ -379,6 +446,11 @@
   <script>
     let allRecords = [];
     let filteredRecords = [];
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 
     function populateFilters() {
       const arrondissements = [...new Set(allRecords.map(r => r._arrondissement).filter(Boolean))]
@@ -432,6 +504,131 @@
       }
     }
 
+    function groupBuildings(records) {
+      const map = {};
+      records.forEach(r => {
+        const key = (r.equipement || '') + '|||' + (r.adresse || '');
+        if (!map[key]) {
+          map[key] = {
+            name: r.equipement || '—',
+            address: r.adresse || '—',
+            arrondissement: r._arrondissement || '',
+            projects: [],
+            totalBudget: 0,
+            sectorCounts: {},
+            geo: null,
+          };
+        }
+        const b = map[key];
+        b.projects.push(r);
+        if (r.budget) {
+          const num = parseInt(r.budget.replace(/\s/g, ''), 10);
+          if (!isNaN(num)) b.totalBudget += num;
+        }
+        const s = r.secteur || 'Autre';
+        b.sectorCounts[s] = (b.sectorCounts[s] || 0) + 1;
+        if (!b.geo && r.geo_point_2d) {
+          b.geo = r.geo_point_2d;
+        }
+        if (!b.arrondissement && r._arrondissement) {
+          b.arrondissement = r._arrondissement;
+        }
+      });
+
+      const buildings = Object.values(map);
+      // Compute dominant sector
+      buildings.forEach(b => {
+        let maxCount = 0;
+        let dominant = 'Autre';
+        for (const [sector, count] of Object.entries(b.sectorCounts)) {
+          if (count > maxCount) {
+            maxCount = count;
+            dominant = sector;
+          }
+        }
+        b.dominantSector = dominant;
+      });
+      // Sort by project count descending
+      buildings.sort((a, b) => b.projects.length - a.projects.length);
+      return buildings;
+    }
+
+    function renderBuildings() {
+      const grid = document.getElementById('cardGrid');
+      const buildings = groupBuildings(filteredRecords);
+
+      if (buildings.length === 0) {
+        grid.innerHTML = '<div class="empty-state">Aucun bâtiment ne correspond aux filtres sélectionnés.</div>';
+        return;
+      }
+
+      const buildingSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 21V7l9-4 9 4v14H3zm2-2h5v-4h4v4h5V8.1l-7-3.12L5 8.1V19zm2-6h2v2H7v-2zm0-4h2v2H7V9zm4 4h2v2h-2v-2zm0-4h2v2h-2V9zm4 4h2v2h-2v-2zm0-4h2v2h-2V9z"/></svg>`;
+      const chevronSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`;
+
+      grid.innerHTML = buildings.map((b, i) => {
+        const color = getColor(b.dominantSector);
+        const budgetStr = b.totalBudget > 0 ? b.totalBudget.toLocaleString('fr-FR') + ' €' : '—';
+        const addrDisplay = escapeHtml(b.address) + (b.arrondissement ? ` (${b.arrondissement})` : '');
+        const projCount = b.projects.length;
+        const projLabel = projCount === 1 ? '1 projet' : `${projCount} projets`;
+
+        const satUrl = b.geo ? getSatelliteUrl({ geo_point_2d: b.geo }) : null;
+        const satHtml = satUrl
+          ? `<img src="${satUrl}" alt="Vue satellite" loading="lazy">`
+          : `<div class="no-loc">Pas de localisation</div>`;
+
+        const projectRows = b.projects.map(r => {
+          const pBudget = formatBudget(r);
+          const pYear = r.annee_livraison || '—';
+          const pType = escapeHtml(r._constructionGroup) || '—';
+          const pDesc = escapeHtml(r.description) || '';
+          return `<div class="project-row">
+            <span class="project-type">${pType}</span>
+            <span class="project-budget">${pBudget}</span>
+            <span class="project-year">${pYear}</span>
+            <span class="project-desc" title="${pDesc}">${pDesc}</span>
+          </div>`;
+        }).join('');
+
+        return `
+          <div class="card" data-index="${i}">
+            <div class="card-images">
+              <div class="card-placeholder" style="background:linear-gradient(135deg, ${color}, ${color}99)">
+                ${buildingSvg}
+                <span class="sector-label">${escapeHtml(b.dominantSector)}</span>
+              </div>
+              <div class="card-satellite">${satHtml}</div>
+            </div>
+            <div class="card-clickable" data-index="${i}">
+              <div class="card-title-area">
+                <div class="card-title">${escapeHtml(b.name)}</div>
+                <div class="card-address">${addrDisplay}</div>
+              </div>
+              <div class="card-header-right">
+                <span class="card-badge" style="background:${color}22;color:${color}">${escapeHtml(b.dominantSector)}</span>
+                <span class="card-toggle">${chevronSvg}</span>
+              </div>
+            </div>
+            <div class="card-summary">
+              <span><strong>${projLabel}</strong></span>
+              <span><strong>${budgetStr}</strong> budget total</span>
+            </div>
+            <div class="card-projects">${projectRows}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach expand/collapse listeners
+      grid.querySelectorAll('.card-clickable').forEach(el => {
+        el.addEventListener('click', () => {
+          el.closest('.card').classList.toggle('expanded');
+        });
+      });
+
+      document.getElementById('recordCount').textContent =
+        `${buildings.length} bâtiments \u00b7 ${filteredRecords.length} projets`;
+    }
+
     function applyFilters() {
       const secteur = document.getElementById('filterSecteur').value;
       const type = document.getElementById('filterType').value;
@@ -456,60 +653,7 @@
         return true;
       });
 
-      renderCards();
-      document.getElementById('recordCount').textContent = `${filteredRecords.length} / ${allRecords.length} projets`;
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    function renderCards() {
-      const grid = document.getElementById('cardGrid');
-
-      if (filteredRecords.length === 0) {
-        grid.innerHTML = '<div class="empty-state">Aucun projet ne correspond aux filtres sélectionnés.</div>';
-        return;
-      }
-
-      const buildingSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M3 21V7l9-4 9 4v14H3zm2-2h5v-4h4v4h5V8.1l-7-3.12L5 8.1V19zm2-6h2v2H7v-2zm0-4h2v2H7V9zm4 4h2v2h-2v-2zm0-4h2v2h-2V9zm4 4h2v2h-2v-2zm0-4h2v2h-2V9z"/></svg>`;
-
-      grid.innerHTML = filteredRecords.map(r => {
-        const color = getColor(r.secteur);
-        const budget = formatBudget(r);
-        const addr = r.adresse || '—';
-        const arrond = r._arrondissement ? ` (${r._arrondissement})` : '';
-        const desc = r.description ? escapeHtml(r.description) : '';
-        const satUrl = getSatelliteUrl(r);
-
-        const satHtml = satUrl
-          ? `<img src="${satUrl}" alt="Vue satellite" loading="lazy">`
-          : `<div class="no-loc">Pas de localisation</div>`;
-
-        return `
-          <div class="card">
-            <div class="card-images">
-              <div class="card-placeholder" style="background:linear-gradient(135deg, ${color}, ${color}99)">
-                ${buildingSvg}
-                <span class="sector-label">${escapeHtml(r.secteur) || ''}</span>
-              </div>
-              <div class="card-satellite">${satHtml}</div>
-            </div>
-            <div class="card-header">
-              <div class="card-title">${escapeHtml(r.equipement) || '—'}</div>
-              <span class="card-badge" style="background:${color}22;color:${color}">${escapeHtml(r.secteur) || '—'}</span>
-            </div>
-            <div class="card-rows">
-              <div class="card-row"><span class="card-label">Adresse</span><span class="card-value">${escapeHtml(addr)}${arrond}</span></div>
-              <div class="card-row"><span class="card-label">Travaux</span><span class="card-value">${escapeHtml(r._constructionGroup) || '—'}</span></div>
-              <div class="card-row"><span class="card-label">Budget</span><span class="card-value">${budget}</span></div>
-              <div class="card-row"><span class="card-label">Livraison</span><span class="card-value">${r.annee_livraison || '—'}</span></div>
-            </div>
-            ${desc ? `<div class="card-desc">${desc}</div>` : ''}
-          </div>
-        `;
-      }).join('');
+      renderBuildings();
     }
 
     // Filter event listeners
