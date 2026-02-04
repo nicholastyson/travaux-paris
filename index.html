@@ -409,7 +409,7 @@
         <button class="sidebar-close" id="sidebarClose">&times;</button>
         <h2>Filtres</h2>
         <div class="filter-group">
-          <label>Secteur</label>
+          <label>Catégorie</label>
           <select id="filterSecteur"><option value="">Tous</option></select>
         </div>
         <div class="filter-group">
@@ -446,7 +446,7 @@
 
       <div class="charts" id="chartsPanel">
         <div class="chart-box">
-          <h3>Par Secteur</h3>
+          <h3>Par Catégorie</h3>
           <canvas id="chartSecteur"></canvas>
         </div>
         <div class="chart-box">
@@ -521,7 +521,7 @@
       const popup = `
         <div class="popup-title">${record.equipement || '—'}</div>
         <div class="popup-row"><span class="popup-label">Adresse</span> ${record.adresse || '—'}${record._arrondissement ? ` (${record._arrondissement})` : ''}</div>
-        <div class="popup-row"><span class="popup-label">Secteur</span> ${record.secteur || '—'}</div>
+        <div class="popup-row"><span class="popup-label">Catégorie</span> ${record.secteur || '—'}</div>
         <div class="popup-row"><span class="popup-label">Type</span> ${record.type_equipement || '—'}</div>
         <div class="popup-row"><span class="popup-label">Travaux</span> ${record._constructionGroup || '—'}${record._constructionGroup !== record.type_construction && record.type_construction ? ` <span style="color:var(--text-muted)">(${record.type_construction})</span>` : ''}</div>
         <div class="popup-row"><span class="popup-label">Budget</span> ${budgetStr}</div>
@@ -556,6 +556,35 @@
           opt.textContent = v;
           sel.appendChild(opt);
         });
+      }
+      updateTypeOptions();
+    }
+
+    // ——— Cascade Type d'équipement based on selected Catégorie ———
+    function updateTypeOptions() {
+      const sel = document.getElementById('filterType');
+      const current = sel.value;
+      const secteur = document.getElementById('filterSecteur').value;
+
+      let types;
+      if (secteur) {
+        types = [...new Set(allRecords.filter(r => r.secteur === secteur).map(r => r.type_equipement).filter(Boolean))].sort();
+      } else {
+        types = [...new Set(allRecords.map(r => r.type_equipement).filter(Boolean))].sort();
+      }
+
+      sel.innerHTML = '<option value="">Tous</option>';
+      types.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      });
+
+      if (types.includes(current)) {
+        sel.value = current;
+      } else {
+        sel.value = '';
       }
     }
 
@@ -673,7 +702,7 @@
         </div>
         <div class="stat">
           <div class="stat-value">${secteurs}</div>
-          <div class="stat-label">Secteurs</div>
+          <div class="stat-label">Catégories</div>
         </div>
         <div class="stat">
           <div class="stat-value">${(totalBudget / 1_000_000).toFixed(1)}M€</div>
@@ -721,7 +750,11 @@
     });
 
     // ——— Filter event listeners ———
-    ['filterSecteur', 'filterType', 'filterConstruction', 'filterService', 'filterAnnee', 'filterArrond'].forEach(id => {
+    document.getElementById('filterSecteur').addEventListener('change', () => {
+      updateTypeOptions();
+      applyFilters();
+    });
+    ['filterType', 'filterConstruction', 'filterService', 'filterAnnee', 'filterArrond'].forEach(id => {
       document.getElementById(id).addEventListener('change', applyFilters);
     });
     document.getElementById('filterSearch').addEventListener('input', applyFilters);
@@ -730,6 +763,7 @@
         document.getElementById(id).value = '';
       });
       document.getElementById('filterSearch').value = '';
+      updateTypeOptions();
       applyFilters();
     });
 
